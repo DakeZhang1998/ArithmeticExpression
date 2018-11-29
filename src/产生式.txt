@@ -1,0 +1,14 @@
+E -> TE'          E.val = T.val + E'.val
+E'-> +TE'         E'.val = T.val + E'.val
+  -> e            E'.val = 0
+E'-> -TE'         E'.val = - T.val + E'.val
+  -> e            E'.val = 0
+T -> FT'          T.val = F.val * T'.val
+T'-> *FT'         T'.val = F.val * T'.val
+  -> e            T'.val = 1
+T'-> /FT'         T'.val = 1 / F.val * T'.val
+  -> e            T'.val = 1
+F -> -F'          F.val = - F'.val
+  -> F'           F.val = F'.val
+F'-> (E)          F'.val = E.val
+  -> i            F'.val = i.information

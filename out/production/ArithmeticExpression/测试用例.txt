@@ -1,0 +1,34 @@
+************词法测试************
+简单算式：
+1+1
+4*2-8/2+1
+带括号的算式：
+(4-2/3)+1-(33/2+5)   
+带小数点的算式：
+1.22+3.3*(1.0+2.2*3.9)-2.0   
+带0.的算式：
+0.22+3.2*(2.22+0.0003)-2.1/0.33   
+整数小数混合的算式：
+2+3.3/(2.22-3+44)-0.25*3+1.1
+带字母的算式：
+a+(b-c/2.2+11)-ccc+www-0.15+2   
+c-(a*b+c)*1.1+0.001+_acb+testTest*2.22  
+带空格的算式：
+2+   3/2*a/(b +c )
+出错的算式：
+2+0..3+4..4*(1+1.1)    //more than one dots
+12_ab+44*2.2    // invalid expression of numbers
+0023+2.3    //invalid expression of numbers
+2+%/3+ab    // invalid character
+a?3+2.2      // invalid character
+************语法测试************
+1-1/2+3*3
+(1+1*3)-2
+(2.0/2+3.3)*1
+(2.0/a+3.3)*b
+(1+1/2*(3/2))+1     // 嵌套括号
+2++3/3              // Location 3 Error: wrong usage of operator.
+(2+1/3              // Location 7 Error: Missing a right bracket.
+2+3/2)+2            // Location 6 Error: Missing a left bracket.
+1+1)                // Location 4 Error: There is an unmatched right bracket.
+1+1i
