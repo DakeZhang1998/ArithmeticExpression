@@ -2,12 +2,15 @@ import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import sun.reflect.generics.tree.Tree;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 class TreeNode {
     String curNode;
     TreeNode parent;
     ArrayList<TreeNode> children;
     public double val = 0;
+    public int layer = 0;
+    public int colCount = 0;           // Marks the number of columns used in painting the grammar tree.
 
     public TreeNode(String curNode, TreeNode parent) {
         this.curNode = curNode;
@@ -16,7 +19,19 @@ class TreeNode {
     }
 
     public void addChild(TreeNode node) {
+        node.layer = this.layer + 1;
+        setChildrenLayer(node);
         this.children.add(node);
+    }
+
+    private void setChildrenLayer(TreeNode n){
+        if(n.children.size() != 0){
+            ArrayList<TreeNode> c = n.children;
+            for(TreeNode node : c){
+                node.layer = node.layer + 1;
+                setChildrenLayer(node);
+            }
+        }
     }
 }
 
@@ -41,6 +56,7 @@ public class Parser {
             if (E2Node != null) {
                 curNode.addChild(E2Node);
                 curNode.val = TNode.val + E2Node.val;
+                curNode.colCount = TNode.colCount + E2Node.colCount;
                 return curNode;
             }
             return null;
@@ -62,6 +78,7 @@ public class Parser {
                     throw new Exception(error_message);
                 }
                 curNode.val = TNode.val + E2Node.val;
+                curNode.colCount = TNode.colCount + E2Node.colCount;
                 return curNode;
             }
             return null;
@@ -76,9 +93,11 @@ public class Parser {
             if (tokens.get(curIndex).type == TokenType.PLUS) {
                 productionStr += "E'->+TE'" + "\n";
                 TreeNode plusNode = new TreeNode("+", curNode);
+                plusNode.colCount = 1;
                 curNode.addChild(plusNode);
             } else {
                 TreeNode plusNode = new TreeNode("-", curNode);
+                plusNode.colCount = 1;
                 curNode.addChild(plusNode);
                 productionStr += "E'->-TE'" + "\n";
                 isAdd = false;
@@ -94,6 +113,7 @@ public class Parser {
                         curNode.val = TNode.val + E2Node.val;
                     else
                         curNode.val = - TNode.val + E2Node.val;
+                    curNode.colCount = TNode.colCount + E2Node.colCount + 1;
                     return curNode;
                 }
                 return null;
@@ -102,8 +122,10 @@ public class Parser {
         }
         productionStr += "E'->e" + "\n";
         TreeNode nullNode = new TreeNode("e", curNode);
+        nullNode.colCount = 1;
         curNode.addChild(nullNode);
         curNode.val = 0;
+        curNode.colCount = 1;
         return curNode;
     }
 
@@ -117,6 +139,7 @@ public class Parser {
             if (T2Node != null) {
                 curNode.addChild(T2Node);
                 curNode.val = FNode.val * T2Node.val;
+                curNode.colCount = FNode.colCount + T2Node.colCount;
                 return curNode;
             }
             return null;
@@ -131,10 +154,12 @@ public class Parser {
             if (tokens.get(curIndex).type == TokenType.MULTIPLE) {
                 productionStr += "T'->*FT'" + "\n";
                 TreeNode plusNode = new TreeNode("*", curNode);
+                plusNode.colCount = 1;
                 curNode.addChild(plusNode);
             } else {
                 productionStr += "T'->/FT'" + "\n";
                 TreeNode plusNode = new TreeNode("/", curNode);
+                plusNode.colCount = 1;
                 curNode.addChild(plusNode);
                 isMultiply = false;
             }
@@ -149,6 +174,7 @@ public class Parser {
                             curNode.val = FNode.val * T2Node.val;
                         else
                             curNode.val = 1 / FNode.val * T2Node.val;
+                        curNode.colCount = FNode.colCount + T2Node.colCount + 1;
                         return curNode;
                     }
                     return null;
@@ -159,8 +185,10 @@ public class Parser {
         }
         productionStr += "T'->e" + "\n";
         TreeNode nullNode = new TreeNode("e", curNode);
+        nullNode.colCount = 0;
         curNode.addChild(nullNode);
         curNode.val = 1;
+        curNode.colCount = 1;
         return curNode;
     }
 
@@ -169,12 +197,14 @@ public class Parser {
         if (tokens.get(curIndex).type == TokenType.MINUS) {
             productionStr += "F->-F'" + "\n";
             TreeNode plusNode = new TreeNode("-", curNode);
+            plusNode.colCount = 1;
             curNode.addChild(plusNode);
             if (readNextToken()) {
                 TreeNode F2Node = F2(curNode);
                 if (F2Node != null) {
                     curNode.addChild(F2Node);
                     curNode.val = - F2Node.val;
+                    curNode.colCount = 1 + F2Node.colCount;
                     return curNode;
                 }
                 return null;
@@ -187,6 +217,7 @@ public class Parser {
             if (F2Node != null) {
                 curNode.addChild(F2Node);
                 curNode.val = F2Node.val;
+                curNode.colCount = F2Node.colCount;
                 return curNode;
             }
             return null;
@@ -198,6 +229,7 @@ public class Parser {
         if (tokens.get(curIndex).type == TokenType.LEFTBRACKET) {
             productionStr += "F'->(E)" + "\n";
             TreeNode leftBracketNode = new TreeNode("(", curNode);
+            leftBracketNode.colCount = 1;
             curNode.addChild(leftBracketNode);
             if (readNextToken()) {
                 TreeNode ENode = E(curNode);
@@ -205,14 +237,17 @@ public class Parser {
                     curNode.addChild(ENode);
                     if (tokens.get(curIndex).type == TokenType.RIGHTBRACKET) {
                         TreeNode rightBracketNode = new TreeNode(")", curNode);
+                        rightBracketNode.colCount = 1;
                         curNode.addChild(rightBracketNode);
                         if (readNextToken()) {
                             curNode.val = ENode.val;
+                            curNode.colCount = 2 + ENode.colCount;
                             return curNode;
                         }
                         else {
                             curIndex++;
                             curNode.val = ENode.val;
+                            curNode.colCount = 2 + ENode.colCount;
                             return curNode;
                         }
                     }
@@ -228,8 +263,11 @@ public class Parser {
             productionStr += "F'->i" + "\n";
             TreeNode iNode = new TreeNode("i", curNode);
             curNode.addChild(iNode);
-            iNode.addChild(new TreeNode(tokens.get(curIndex).information,iNode));
+            TreeNode valNode = new TreeNode(tokens.get(curIndex).information, iNode);
+            valNode.colCount = 1;
+            iNode.addChild(valNode);
             curNode.val = Double.valueOf(tokens.get(curIndex).information);
+            curNode.colCount = 1;
             readNextToken();
             return curNode;
         }
@@ -261,7 +299,6 @@ public class Parser {
             treeStr += "- E\n";
             printTreeNode(root, 1);
         }
-        productionStr += root.val + "\n";
         return root;
     }
 

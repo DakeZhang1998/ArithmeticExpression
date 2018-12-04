@@ -71,6 +71,8 @@ public class Interface extends JFrame implements ActionListener
         ParserResult.setText(parser.productionStr);
         treeResult.setText(parser.treeStr);
     }
+
+
     public static void main(String[] args)
     {
         JFrame.setDefaultLookAndFeelDecorated(true);

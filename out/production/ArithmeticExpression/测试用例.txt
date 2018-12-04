@@ -32,3 +32,7 @@ a?3+2.2      // invalid character
 2+3/2)+2            // Location 6 Error: Missing a left bracket.
 1+1)                // Location 4 Error: There is an unmatched right bracket.
 1+1i
+************”Ô“Â≤‚ ‘************
+1-1/2+3*3
+(1+1*3)-2
+(2.0/2+3.3)*1
